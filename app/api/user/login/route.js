@@ -1,33 +1,42 @@
 // app/api/user/login/route.js
-import { connectToDB } from '../../../util/db.js';
-import User from "../../../models/User.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { NextResponse } from "next/server";
-
-const JWT_SECRET = process.env.JWT_SECRET || "secret";
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { connectToDB } from '../../../util/db';
+import User from '../../../models/User';
+import { signToken } from '../../../util/auth';
+import { cookies } from 'next/headers';
 
 export async function POST(req) {
   try {
     const { email, password } = await req.json();
-    if (!email || !password) {
-      return NextResponse.json({ error: "email and password required" }, { status: 400 });
-    }
+    if (!email || !password) return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
 
     await connectToDB();
     const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    if (!user) return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
 
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    const token = signToken({ id: user._id, email: user.email });
 
-    const safeUser = { id: user._id, username: user.username, email: user.email, createdAt: user.createdAt };
-    return NextResponse.json({ token, user: safeUser });
+    // Updated cookie API — must await cookies()
+    const cookieStore = await cookies();
+    cookieStore.set("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7, // 1 week
+    });
+
+    return NextResponse.json({
+      message: "Login successful",
+      token,
+      user: { id: user._id, name: user.name, email: user.email }
+    });
   } catch (err) {
-    console.error("LOGIN ERR", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.error('Login error:', err);
+    return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }
 }
+
