@@ -1,52 +1,53 @@
-import { NextResponse } from "next/server";
-import { connectToDB } from "@/app/util/db.js";
-import { getUserFromRequest } from "@/app/util/auth.js";
-import File from "@/app/models/File";
-import Catalog from "@/app/models/Catalog";
+// app/api/dashboard/route.js
+// import { NextResponse } from 'next/server';
+// import { connectToDB } from '@/util/db';
+// import Expense from '@/models/Expense';
+// import mongoose from 'mongoose';
+// import { getUserFromCookie } from '@/util/auth';
+import { NextResponse } from 'next/server';
+import { connectToDB } from '../../util/db';
+import Expense from '../../models/Expense';
+import mongoose from 'mongoose';
+import { getUserFromCookie } from '../../util/auth';
 
-export async function GET(req) {
+
+export async function GET() {
   try {
-    // Get the logged-in user
-    const user = await getUserFromRequest(req);
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const user = await getUserFromCookie();
+    if (!user) return NextResponse.json({ message: 'Not authenticated' }, { status: 401 });
 
-    //Connect to MongoDB
     await connectToDB();
+    const userId = new mongoose.Types.ObjectId(user.id);
 
-    //Stats
-    const uploadsCount = await File.countDocuments({ owner: user._id });
-    const catalogCount = await Catalog.countDocuments({ owner: user._id });
+    // Category breakdown
+    const categories = await Expense.aggregate([
+      { $match: { userId } },
+      { $group: { _id: '$category', total: { $sum: '$amount' } } },
+      { $sort: { total: -1 } },
+    ]);
 
-    //Recent uploads (latest 5 files) - still from File table
-    const recentUploads = await File.find({ owner: user._id })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .select("catalogName fileUrl createdAt");
+    // Monthly totals for last 6 months
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const monthly = await Expense.aggregate([
+      { $match: { userId, date: { $gte: start } } },
+      { $group: { _id: { $dateToString: { format: '%Y-%m', date: '$date' } }, total: { $sum: '$amount' } } },
+      { $sort: { _id: 1 } },
+    ]);
 
-    //Catalogs created by user - now from Catalog table with file data
-    const userCatalogs = await Catalog.find({ owner: user._id })
-      .sort({ createdAt: -1 })
-      .select("title description file createdAt");
-      console.log("user catalogs ",userCatalogs)
-
-    // Response
-    return NextResponse.json({
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-      },
-      stats: {
-        uploadsCount,
-        catalogCount,
-        recentUploads,
-        userCatalogs, 
-      },
+    // totals by type
+    const totalsAgg = await Expense.aggregate([
+      { $match: { userId } },
+      { $group: { _id: '$type', total: { $sum: '$amount' } } },
+    ]);
+    const totals = { income: 0, expense: 0 };
+    totalsAgg.forEach(t => {
+      totals[t._id] = t.total;
     });
+
+    return NextResponse.json({ categories, monthly, totals });
   } catch (err) {
-    console.error("Dashboard API error:", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.error('GET /dashboard', err);
+    return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }
 }
