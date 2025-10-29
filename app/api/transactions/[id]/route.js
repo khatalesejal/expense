@@ -7,7 +7,7 @@ import getUserFromCookie from "../../../util/auth";
 export async function PUT(req, context) {
   try {
     const { params } = context;
-    const { id } = await params; // ✅ REQUIRED
+    const { id } = await params; 
 
     await connectToDB();
     const user = await getUserFromCookie();
@@ -35,7 +35,7 @@ export async function PUT(req, context) {
 export async function DELETE(req, context) {
   try {
     const { params } = context;
-    const { id } = await params; // ✅ REQUIRED
+    const { id } = await params; 
 
     await connectToDB();
     const user = await getUserFromCookie();
