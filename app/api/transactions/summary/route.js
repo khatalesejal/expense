@@ -1,7 +1,9 @@
+
 import { NextResponse } from "next/server";
 import { connectToDB } from "../../../util/db";
 import Transaction from "../../../models/Transaction";
 import { getUserFromCookie } from "../../../util/auth";
+import mongoose from "mongoose";
 
 export async function GET() {
   try {
@@ -9,15 +11,17 @@ export async function GET() {
     const user = await getUserFromCookie();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // ✅ Category-wise totals (Pie Chart)
+    const userObjectId = new mongoose.Types.ObjectId(user.id);
+
+    // Category-wise totals (Pie Chart)
     const categorySummary = await Transaction.aggregate([
-      { $match: { userId: user.id } },
+      { $match: { userId: userObjectId } },
       { $group: { _id: "$category", totalAmount: { $sum: "$amount" } } }
     ]);
 
     // Monthly totals (Bar Chart)
     const monthlySummary = await Transaction.aggregate([
-      { $match: { userId: user.id } },
+      { $match: { userId: userObjectId } },
       {
         $group: {
           _id: { month: { $month: "$date" }, year: { $year: "$date" } },
@@ -27,10 +31,7 @@ export async function GET() {
       { $sort: { "_id.year": 1, "_id.month": 1 } }
     ]);
 
-    return NextResponse.json({
-      categorySummary,
-      monthlySummary
-    }, { status: 200 });
+    return NextResponse.json({ categorySummary, monthlySummary }, { status: 200 });
 
   } catch (error) {
     console.log("SUMMARY ERROR:", error);

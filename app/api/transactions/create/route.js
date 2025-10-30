@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { connectToDB } from "../../util/db";
-import Transaction from "../../models/Transaction";
-import { getUserFromCookie } from "../../util/auth";
+import { connectToDB } from "../../../util/db";
+import Transaction from "../../../models/Transaction";
+import { getUserFromCookie } from "../../../util/auth"; 
 
 export async function POST(req) {
   try {
     await connectToDB();
 
-    // Get logged-in user from cookie
+    //  Get logged-in user from cookie
     const user = await getUserFromCookie();
 
     if (!user) {
