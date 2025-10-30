@@ -1,0 +1,277 @@
+'use client';
+
+import { FiX, FiDollarSign, FiShoppingBag, FiCreditCard, FiCoffee, FiFilm, FiGift, FiChevronDown } from 'react-icons/fi';
+
+import { useState, useEffect } from 'react';
+
+const AddExpenseModal = ({ isOpen, onClose, onSubmit, formData, onInputChange }) => {
+  const [errors, setErrors] = useState({});
+  
+  useEffect(() => {
+    // Clear errors when modal opens/closes
+    if (isOpen) {
+      setErrors({});
+    }
+  }, [isOpen]);
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.title?.trim()) {
+      newErrors.title = 'Title is required';
+    }
+    
+    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+      newErrors.amount = 'Please enter a valid amount';
+    }
+    
+    if (!formData.date) {
+      newErrors.date = 'Date is required';
+    }
+    
+    if (!formData.category) {
+      newErrors.category = 'Category is required';
+    }
+    
+    if (!formData.type) {
+      newErrors.type = 'Type is required';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (e) => {
+    const { name } = e.target;
+    // Clear the error for the current field when typing
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+    // Call the original onInputChange
+    onInputChange(e);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      onSubmit(e);
+    }
+  };
+  
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all duration-300">
+      <div className="bg-white/95 dark:bg-gray-800/95 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-100 dark:border-gray-700 backdrop-blur-lg transition-all duration-300 transform hover:scale-[1.005] hover:shadow-xl">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold">Add New Transaction</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+            aria-label="Close modal"
+          >
+            <FiX size={24} />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Type Field */}
+        
+
+          {/* Title Field */}
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+              Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="e.g. Grocery shopping"
+              
+            />
+            {errors.title && (
+              <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+            )}
+          </div>
+
+          {/* Amount Field */}
+          <div>
+            <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
+              Amount <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
+              <input
+                type="number"
+                id="amount"
+                name="amount"
+                value={formData.amount}
+                onChange={handleInputChange}
+                step="0.01"
+                min="0.01"
+                className="w-full pl-8 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="0.00"
+                
+              />
+              {errors.amount && (
+                <p className="mt-1 text-sm text-red-600">{errors.amount}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Date Field */}
+          <div>
+            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+              Date <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              value={formData.date}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            
+            />
+            {errors.date && (
+              <p className="mt-1 text-sm text-red-600">{errors.date}</p>
+            )}
+          </div>
+
+          {/* Category Field */}
+          {/* <div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+              Category <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleInputChangeWithErrorClear}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                
+              >
+                <option value="">Select a category</option>
+                <option value="food">Food & Drinks</option>
+                <option value="shopping">Shopping</option>
+                <option value="bills">Bills</option>
+                <option value="transportation">Transportation</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="gifts">Gifts</option>
+                <option value="other">Other</option>
+              </select>
+              <div className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">
+                <FiChevronDown className="h-4 w-4" />
+              </div>
+            </div>
+          </div> */}
+
+          {/* Category Field */}
+{/* Category Field */}
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                Category <span className="text-red-500">*</span>
+              </label>
+
+              <div className="relative">
+                <input
+                  list="categorySuggestions"
+                  id="category"
+                  name="category"
+                  value={formData.category || ""}
+                  onChange={handleInputChange}
+                  placeholder="Type or select a category"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <datalist id="categorySuggestions">
+                  <option value="Food & Drinks" />
+                  <option value="Shopping" />
+                  <option value="Bills" />
+                  <option value="Transportation" />
+                  <option value="Entertainment" />
+                  <option value="Gifts" />
+                  <option value="Other" />
+                </datalist>
+              </div>
+
+              {errors.category && (
+                <p className="mt-1 text-sm text-red-600">{errors.category}</p>
+              )}
+            </div>
+
+         
+            <div>
+              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+                Type <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  id="type"
+                  name="type"
+                  value={formData.type || ""}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                >
+                  <option value="">Select type</option> {/* 👈 Default placeholder */}
+                  <option value="expense">Expense</option>
+                  <option value="income">Income</option>
+                </select>
+                <div className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">
+                  <FiChevronDown className="h-4 w-4" />
+                </div>
+              </div>
+
+              {errors.type && (
+                <p className="mt-1 text-sm text-red-600">{errors.type}</p>
+              )}
+            </div>
+
+          {/* Description (Optional) */}
+          <div>
+            <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-1">
+            Note
+            </label>
+            <textarea
+              id="note"
+              name="note"
+              value={formData.note || ''}
+              onChange={handleInputChange}
+              rows="2"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Add any additional details..."
+            />
+          </div>
+
+          {/* Form Actions */}
+          <div className="flex justify-end space-x-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            >
+              Submit
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default AddExpenseModal;
