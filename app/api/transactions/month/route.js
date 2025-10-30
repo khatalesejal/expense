@@ -10,8 +10,8 @@ export async function GET(req) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { searchParams } = new URL(req.url);
-    const month = searchParams.get("month"); // 1-12
-    const year = searchParams.get("year");   // 2025 etc.
+    const month = searchParams.get("month"); 
+    const year = searchParams.get("year");  
 
     if (!month || !year) {
       return NextResponse.json({ error: "Month and Year are required" }, { status: 400 });

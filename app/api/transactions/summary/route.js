@@ -15,7 +15,7 @@ export async function GET() {
       { $group: { _id: "$category", totalAmount: { $sum: "$amount" } } }
     ]);
 
-    // ✅ Monthly totals (Bar Chart)
+    // Monthly totals (Bar Chart)
     const monthlySummary = await Transaction.aggregate([
       { $match: { userId: user.id } },
       {
