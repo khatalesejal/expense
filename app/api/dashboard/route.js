@@ -1,7 +1,7 @@
 // app/api/dashboard/route.js
 import { NextResponse } from 'next/server';
 import { connectToDB } from '../../util/db';
-import Expense from '../../models/Expense';
+import Transaction from '../../models/Transaction';
 import mongoose from 'mongoose';
 import { getUserFromCookie } from '../../util/auth';
 
@@ -15,23 +15,24 @@ export async function GET() {
     const userId = new mongoose.Types.ObjectId(user.id);
 
     // Category breakdown
-    const categories = await Expense.aggregate([
+    const categories = await Transaction.aggregate([
       { $match: { userId } },
       { $group: { _id: '$category', total: { $sum: '$amount' } } },
       { $sort: { total: -1 } },
     ]);
 
     // Monthly totals for last 6 months
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-    const monthly = await Expense.aggregate([
-      { $match: { userId, date: { $gte: start } } },
-      { $group: { _id: { $dateToString: { format: '%Y-%m', date: '$date' } }, total: { $sum: '$amount' } } },
-      { $sort: { _id: 1 } },
-    ]);
+const now = new Date();
+const start = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+const monthly = await Transaction.aggregate([
+  { $match: { userId, createdAt: { $gte: start } } },
+  { $group: { _id: { $dateToString: { format: '%Y-%m', date: '$createdAt' } }, total: { $sum: '$amount' } } },
+  { $sort: { _id: 1 } },
+]);
+
 
     // totals by type
-    const totalsAgg = await Expense.aggregate([
+    const totalsAgg = await Transaction.aggregate([
       { $match: { userId } },
       { $group: { _id: '$type', total: { $sum: '$amount' } } },
     ]);
