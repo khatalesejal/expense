@@ -37,7 +37,7 @@ export async function POST(req) {
     });
 
     return NextResponse.json(
-      { message: "Transaction added successfully", transaction: newTransaction },
+      { message: "Transaction create successfully", transaction: newTransaction },
       { status: 201 }
     );
   } catch (error) {

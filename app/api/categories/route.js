@@ -2,7 +2,6 @@
 
 import { NextResponse } from 'next/server';
 import { connectToDB } from '../../util/db';
-import Expense from '../../models/Expense';
 import mongoose from 'mongoose';
 import { getUserFromCookie } from '../../util/auth';
 import Category from '../../models/Category';
