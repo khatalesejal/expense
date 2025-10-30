@@ -6,10 +6,7 @@ import { getUserFromCookie } from '@/app/util/auth';
 import mongoose from 'mongoose';
 
 function getIdFromReq(req) {
-  // Next provides the actual pathname; we can parse it or extract from request.nextUrl
-  // We use nextUrl to get params: the route file placed under /id handles a param.
-  // In route handlers, we don't get params argument automatically, so use request.nextUrl.
-  const url = new URL(req.url);
+  
   const parts = url.pathname.split('/');
   return parts[parts.length - 1];
 }
