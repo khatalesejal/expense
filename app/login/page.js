@@ -26,11 +26,6 @@ export default function LoginPage() {
       newErrors.email = 'Please enter a valid email address';
     }
     
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

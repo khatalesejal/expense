@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiPlus } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { FiDollarSign, FiTrendingUp, FiTrendingDown } from 'react-icons/fi';
+import TransactionHeader from '../component/TransactionHeader';
 import { Bar, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -23,13 +24,16 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tool
 
 const Dashboard = () => {
   const [showAddExpense, setShowAddExpense] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [filteredExpenses, setFilteredExpenses] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     amount: '',
     date: new Date().toISOString().split('T')[0],
-    category: 'food',
-    type: 'expense',
-    description: ''
+    category: '',
+    type: '',
+    note: ''
   });
   const [expenses, setExpenses] = useState([
   // Sample data - replace with your actual data
@@ -37,15 +41,48 @@ const Dashboard = () => {
   { id: 2, title: 'Salary', category: 'Income', type: 'Income', amount: 3000.00, date: '2023-10-28' },
 ]);
 
-  // ✅ Sample summary data
-  const summaryData = {
-    balance: 2450.75,
-    income: 3500.0,
-    expenses: 1049.25,
-  };
-  
+  // Get unique categories for the filter
+  const categories = [...new Set(expenses.map(expense => expense.category))];
 
-  // ✅ Chart data
+  // Filter expenses based on selected category and month
+  useEffect(() => {
+    let result = [...expenses];
+    
+    // Filter by category
+    if (selectedCategory !== 'all') {
+      result = result.filter(expense => expense.category === selectedCategory);
+    }
+    
+    // Filter by month and year
+    result = result.filter(expense => {
+      const expenseDate = new Date(expense.date);
+      return (
+        expenseDate.getMonth() === selectedMonth.getMonth() &&
+        expenseDate.getFullYear() === selectedMonth.getFullYear()
+      );
+    });
+    
+    setFilteredExpenses(result);
+  }, [expenses, selectedCategory, selectedMonth]);
+
+  // Calculate summary data based on filtered expenses
+  const summaryData = {
+    balance: 0,
+    income: 0,
+    expenses: 0,
+  };
+
+  filteredExpenses.forEach(expense => {
+    if (expense.type === 'Income') {
+      summaryData.income += parseFloat(expense.amount);
+    } else {
+      summaryData.expenses += parseFloat(expense.amount);
+    }
+  });
+  
+  summaryData.balance = summaryData.income - summaryData.expenses;
+
+  // Chart data
   const monthlyData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
     datasets: [
@@ -112,29 +149,35 @@ const handleDeleteExpense = (id) => {
     e.preventDefault();
     console.log('Adding expense:', formData);
     setShowAddExpense(false);
+    resetFormData();
+  };
+
+  const resetFormData = () => {
     setFormData({
       title: '',
       amount: '',
       date: new Date().toISOString().split('T')[0],
-      category: 'food',
-      type: 'expense',
-      description: ''
+      category: '',
+      type: '',
+      note: ''
     });
+  };
+
+  const handleAddTransactionClick = () => {
+    resetFormData();
+    setShowAddExpense(true);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       {/* Header */}
       <Header username="Dhanashree" onLogout={() => console.log('Logged out')} />
-      <div className="flex justify-between items-center mb-6">
-        
-        <button
-          onClick={() => setShowAddExpense(true)}
-          className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-        >
-          <FiPlus className="mr-2" /> Add Transaction
-        </button>
-      </div>
+      <TransactionHeader
+        onAddTransaction={() => setShowAddExpense(true)}
+        categories={categories}
+        onCategoryChange={(category) => setSelectedCategory(category)}
+        onMonthChange={(date) => setSelectedMonth(date)}
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -145,7 +188,7 @@ const handleDeleteExpense = (id) => {
           </div>
           <div>
             <p className="text-gray-500 text-sm">Total Balance</p>
-            <p className="text-2xl font-semibold">${summaryData.balance.toFixed(2)}</p>
+            <p className="text-2xl font-semibold">₹{summaryData.balance.toFixed(2)}</p>
           </div>
         </div>
 
@@ -156,7 +199,7 @@ const handleDeleteExpense = (id) => {
           </div>
           <div>
             <p className="text-gray-500 text-sm">Income</p>
-            <p className="text-2xl font-semibold">+${summaryData.income.toFixed(2)}</p>
+            <p className="text-2xl font-semibold">+₹{summaryData.income.toFixed(2)}</p>
           </div>
         </div>
 
@@ -167,7 +210,7 @@ const handleDeleteExpense = (id) => {
           </div>
           <div>
             <p className="text-gray-500 text-sm">Expenses</p>
-            <p className="text-2xl font-semibold">-${summaryData.expenses.toFixed(2)}</p>
+            <p className="text-2xl font-semibold">-₹{summaryData.expenses.toFixed(2)}</p>
           </div>
         </div>
       </div>
@@ -185,7 +228,7 @@ const handleDeleteExpense = (id) => {
         {/* Pie Chart */}
         <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
           <h3 className="text-lg font-semibold mb-4">Spending by Category</h3>
-          {/* 👇 this fixes the "too large" issue */}
+          {/* this fixes the "too large" issue */}
           <div className="w-full flex justify-center">
             <div className="aspect-square w-64 max-w-full">
               <Pie data={categoryData} options={{ plugins: { legend: { position: 'bottom' } }, maintainAspectRatio: true }} />
@@ -204,7 +247,7 @@ const handleDeleteExpense = (id) => {
       />
 
       <ExpenseTable 
-       expenses={expenses}
+       expenses={filteredExpenses}
        onEdit={handleEditExpense}
        onDelete={handleDeleteExpense}
 />

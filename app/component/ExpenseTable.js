@@ -50,7 +50,7 @@ export default function ExpenseTable({ expenses = [], onEdit, onDelete }) {
                 <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
                   expense.type === 'Income' ? 'text-green-600' : 'text-red-600'
                 }`}>
-                  {expense.type === 'Expense' ? '-' : '+'} ${expense.amount.toFixed(2)}
+                  {expense.type === 'Expense' ? '-' : '+'} ₹{expense.amount.toFixed(2)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
