@@ -1,25 +1,40 @@
-// app/util/auth.js
-import jwt from "jsonwebtoken";
-import { connectToDB } from './db.js'; 
-import User from "../models/User.js";
+import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
+import User from '../models/User';
+import { connectToDB } from './db';
 
-const JWT_SECRET = process.env.JWT_SECRET || "secret";
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
-export async function getUserFromRequest(req) {
-  // read Authorization header: "Bearer <token>"
-  const auth = req.headers.get?.("authorization") || req.headers?.authorization || null;
-  if (!auth) return null;
-  const parts = auth.split(" ");
-  if (parts.length !== 2) return null;
-  const token = parts[1];
+if (!JWT_SECRET) throw new Error('JWT_SECRET is required in env');
+
+export function signToken(payload) {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+
+export function verifyToken(token) {
+  return jwt.verify(token, JWT_SECRET);
+}
+
+export async function getUserFromCookie() {
   try {
-    const payload = jwt.verify(token, JWT_SECRET);
+    const cookieStore = await cookies();  
+    const token = cookieStore.get('token')?.value;
+
+    if (!token) return null;
+
+    const payload = verifyToken(token);
+
     await connectToDB();
-    const user = await User.findById(payload.id).select("-password");
-    return user || null;
+
+    const user = await User.findById(payload.id).select('-password');
+    if (!user) return null;
+
+    return { id: user._id.toString(), email: user.email, name: user.name };
   } catch (err) {
+    console.warn('getUserFromCookie error', err?.message || err);
     return null;
   }
 }
 
-
+export default getUserFromCookie;

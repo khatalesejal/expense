@@ -1,31 +1,39 @@
 // app/api/user/register/route.js
-import { connectToDB } from '../../../util/db.js';
-import User from "../../../models/User.js";
-import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { connectToDB } from '../../../util/db';
+import User from '../../../models/User';
+import { signToken } from '../../../util/auth';
+import { cookies } from 'next/headers';
+
 export async function POST(req) {
   try {
-    await connectToDB();
     const body = await req.json();
-    const { username, email, password } = body;
-    if (!username || !email || !password) {
-      return NextResponse.json({ error: "username, email and password are required" }, { status: 400 });
+    const { name, email, password } = body;
+    if (!name || !email || !password) {
+      return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
     }
 
-    const existing = await User.findOne({ email: email.toLowerCase() });
-    if (existing) {
-      return NextResponse.json({ error: "Email already registered" }, { status: 409 });
-    }
+    await connectToDB();
+    const existing = await User.findOne({ email });
+    if (existing) return NextResponse.json({ message: 'User already exists' }, { status: 409 });
 
-    const salt = await bcrypt.genSalt(10);
-    const hashed = await bcrypt.hash(password, salt);
+    const hashed = await bcrypt.hash(password, 10);
+    const user = await User.create({ name, email: email.toLowerCase(), password: hashed });
 
-    const user = await User.create({ username, email: email.toLowerCase(), password: hashed });
-    const safeUser = { id: user._id, username: user.username, email: user.email, createdAt: user.createdAt };
+    const token = signToken({ id: user._id, email: user.email });
 
-    return NextResponse.json({ user: safeUser }, { status: 201 });
+    const cookieStore = await cookies();
+    cookieStore.set("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+  });
+
+    return NextResponse.json({ user: { id: user._id, name: user.name, email: user.email } }, { status: 201 });
   } catch (err) {
-    console.error("REGISTER ERR", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.error('Register error:', err);
+    return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }
 }
