@@ -56,17 +56,17 @@ const TransactionHeader = ({ onAddTransaction, onCategoryChange, onMonthChange, 
   ];
 
   const formatDate = (date) => {
+    // Show Month Year only for monthly filter
     return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      day: 'numeric',
       month: 'short',
       year: 'numeric'
-    }).replace(/([^,]+),\s*/, '$1, ');
+    });
   };
 
   const handlePrevMonth = () => {
     const newDate = new Date(currentDate);
     newDate.setMonth(newDate.getMonth() - 1);
+    newDate.setDate(1);
     setCurrentDate(newDate);
     onMonthChange?.(newDate);
   };
@@ -74,6 +74,7 @@ const TransactionHeader = ({ onAddTransaction, onCategoryChange, onMonthChange, 
   const handleNextMonth = () => {
     const newDate = new Date(currentDate);
     newDate.setMonth(newDate.getMonth() + 1);
+    newDate.setDate(1);
     setCurrentDate(newDate);
     onMonthChange?.(newDate);
   };
@@ -100,8 +101,10 @@ const TransactionHeader = ({ onAddTransaction, onCategoryChange, onMonthChange, 
   }, []);
 
   const handleDateChange = (date) => {
-    setCurrentDate(date);
-    onMonthChange?.(date);
+    // Normalize to the first day of the month for consistent monthly filtering
+    const normalized = new Date(date.getFullYear(), date.getMonth(), 1);
+    setCurrentDate(normalized);
+    onMonthChange?.(normalized);
     setShowDatePicker(false);
   };
 
@@ -126,8 +129,8 @@ const TransactionHeader = ({ onAddTransaction, onCategoryChange, onMonthChange, 
               <DatePicker
                 selected={currentDate}
                 onChange={handleDateChange}
-                dateFormat="dd/MM/yyyy"
-                showFullMonthYearPicker
+                dateFormat="MMM yyyy"
+                showMonthYearPicker
                 inline
               />
             </div>
