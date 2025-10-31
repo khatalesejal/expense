@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useLoginMutation } from '../services/authApi';
 import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
+import { authApi } from '../services/authApi';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,6 +18,7 @@ export default function LoginPage() {
 
   const [login, { isLoading }] = useLoginMutation();
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const validateForm = () => {
     const newErrors = {};
@@ -26,6 +29,9 @@ export default function LoginPage() {
       newErrors.email = 'Please enter a valid email address';
     }
     
+    if (!password) {
+      newErrors.password = 'Password is required';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -46,7 +52,24 @@ export default function LoginPage() {
         duration: 2000,
         position: 'top-center',
       });
-      
+     
+      dispatch(authApi.util.resetApiState());
+      // Prefetch fresh data for the logged-in user
+      dispatch(authApi.util.prefetch('getTransactions', undefined, { force: true }));
+      dispatch(authApi.util.prefetch('getDashboard', undefined, { force: true }));
+
+      // Persist auth info for later use (e.g., show username on dashboard)
+      try {
+        if (result?.token) {
+          localStorage.setItem('token', result.token);
+        }
+        if (result?.user) {
+          localStorage.setItem('user', JSON.stringify(result.user));
+        }
+      } catch (_) {
+        // ignore storage errors
+      }
+
       setTimeout(() => {
         router.push('/dashboard');
       }, 1000);

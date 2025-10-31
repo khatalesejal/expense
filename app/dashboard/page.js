@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiDollarSign, FiTrendingUp, FiTrendingDown } from 'react-icons/fi';
+import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import TransactionHeader from '../component/TransactionHeader';
 import { Bar, Pie } from 'react-chartjs-2';
 import {
@@ -15,18 +15,32 @@ import {
   Legend,
 } from 'chart.js';
 import AddExpenseModal from '../component/AddExpenseModal';
+import DeleteConfirmModal from '../component/DeleteConfirmModal';
 import Header from '../component/Header';
 import ExpenseTable from '../component/ExpenseTable';
-
+import { 
+  useGetTransactionsQuery, 
+  useDeleteTransactionMutation, 
+  useUpdateTransactionMutation, 
+  useGetDashboardQuery
+} from '../services/authApi';
+import { toast } from 'react-toastify';
 
 // ✅ Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
+  const [username, setUsername] = useState('');
+  const { data: transactions = [], isLoading, isError, refetch } = useGetTransactionsQuery(undefined, { refetchOnMountOrArgChange: true });
+  const { data: dashboardData, isFetching: isDashboardFetching } = useGetDashboardQuery(undefined, { refetchOnMountOrArgChange: true });
+  const [deleteTransaction] = useDeleteTransactionMutation();
+  const [updateTransaction] = useUpdateTransactionMutation();
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [filteredExpenses, setFilteredExpenses] = useState([]);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     amount: '',
@@ -35,84 +49,118 @@ const Dashboard = () => {
     type: '',
     note: ''
   });
-  const [expenses, setExpenses] = useState([
-  // Sample data - replace with your actual data
-  { id: 1, title: 'Grocery', category: 'Food', type: 'Expense', amount: 150.00, date: '2023-10-29' },
-  { id: 2, title: 'Salary', category: 'Income', type: 'Income', amount: 3000.00, date: '2023-10-28' },
-]);
-
-  // Get unique categories for the filter
-  const categories = [...new Set(expenses.map(expense => expense.category))];
-
-  // Filter expenses based on selected category and month
+  
+  // Load username from localStorage (set during login)
   useEffect(() => {
-    let result = [...expenses];
-    
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      result = result.filter(expense => expense.category === selectedCategory);
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) {
+        const u = JSON.parse(raw);
+        if (u?.name) setUsername(u.name);
+      }
+    } catch (_) {
+      // ignore
     }
-    
-    // Filter by month and year
-    result = result.filter(expense => {
-      const expenseDate = new Date(expense.date);
-      return (
-        expenseDate.getMonth() === selectedMonth.getMonth() &&
-        expenseDate.getFullYear() === selectedMonth.getFullYear()
-      );
-    });
-    
-    setFilteredExpenses(result);
-  }, [expenses, selectedCategory, selectedMonth]);
-
-  // Calculate summary data based on filtered expenses
-  const summaryData = {
-    balance: 0,
-    income: 0,
-    expenses: 0,
-  };
-
-  filteredExpenses.forEach(expense => {
-    if (expense.type === 'Income') {
-      summaryData.income += parseFloat(expense.amount);
-    } else {
-      summaryData.expenses += parseFloat(expense.amount);
-    }
+  }, []);
+  
+  // Filter transactions based on selected category and month
+  const filteredExpenses = transactions.filter(expense => {
+    const matchesCategory = selectedCategory === 'all' || expense.category === selectedCategory;
+    const expenseDate = new Date(expense.date);
+    const matchesMonth = expenseDate.getMonth() === selectedMonth.getMonth() && 
+                        expenseDate.getFullYear() === selectedMonth.getFullYear();
+    return matchesCategory && matchesMonth;
   });
   
-  summaryData.balance = summaryData.income - summaryData.expenses;
+  // Placeholder functions for edit and delete actions
+  const handleEdit = (id) => {
+    console.log('Edit transaction:', id);
+    // Add edit functionality here
+  };
 
-  // Chart data
+  const handleDelete = (id) => {
+    console.log('Delete transaction:', id);
+    // Add delete functionality here
+  };
+
+  // Get unique categories for the filter from transactions data
+  const categories = [...new Set(transactions.map(transaction => transaction.category))];
+
+  // Calculate summary data based on filtered transactions
+  const summaryData = filteredExpenses.reduce(
+    (acc, transaction) => {
+      const amount = Number(transaction.amount) || 0;
+      const t = String(transaction.type || '').toLowerCase();
+      if (t === 'income') {
+        acc.income += amount;
+      } else if (t === 'expense') {
+        acc.expenses += amount;
+      }
+      acc.balance = acc.income - acc.expenses;
+      return acc;
+    },
+    { balance: 0, income: 0, expenses: 0 }
+  );
+
+  // Chart data (dynamic, filtered)
+  const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const selectedYear = selectedMonth.getFullYear();
+  // Year-wide filtering respects category filter but includes all months in the selected year
+  const yearFiltered = transactions.filter((t) => {
+    const d = new Date(t.date);
+    const matchYear = d.getFullYear() === selectedYear;
+    const matchCategory = selectedCategory === 'all' || t.category === selectedCategory;
+    return matchYear && matchCategory;
+  });
+
+  const monthIncome = Array(12).fill(0);
+  const monthExpense = Array(12).fill(0);
+  yearFiltered.forEach((t) => {
+    const idx = new Date(t.date).getMonth();
+    const amt = Number(t.amount) || 0;
+    const tt = String(t.type || '').toLowerCase();
+    if (tt === 'income') monthIncome[idx] += amt;
+    else if (tt === 'expense') monthExpense[idx] += amt;
+  });
+
   const monthlyData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+    labels: monthLabels,
     datasets: [
       {
         label: 'Income',
-        data: [3000, 2800, 3200, 3000, 3500, 3400, 3600, 3500, 3400, 3500],
+        data: monthIncome,
         backgroundColor: 'rgba(34,197,94,0.7)',
         borderRadius: 4,
       },
       {
         label: 'Expenses',
-        data: [2400, 2100, 2300, 2200, 2500, 2400, 2600, 2500, 2400, 2500],
+        data: monthExpense,
         backgroundColor: 'rgba(239,68,68,0.7)',
         borderRadius: 4,
       },
     ],
   };
 
+  // Spending by Category for the selected month (expenses only)
+  const expenseByCategoryMap = filteredExpenses.reduce((acc, t) => {
+    const tt = String(t.type || '').toLowerCase();
+    if (tt !== 'expense') return acc;
+    const key = t.category || 'Others';
+    const amt = Number(t.amount) || 0;
+    acc[key] = (acc[key] || 0) + amt;
+    return acc;
+  }, {});
+  const catLabels = Object.keys(expenseByCategoryMap);
+  const catValues = catLabels.map((k) => expenseByCategoryMap[k]);
+  const palette = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#14b8a6', '#eab308', '#22d3ee', '#64748b'];
+  const catColors = catLabels.map((_, i) => palette[i % palette.length]);
+
   const categoryData = {
-    labels: ['Food', 'Shopping', 'Bills', 'Entertainment', 'Others'],
+    labels: catLabels.length ? catLabels : ['No expenses'],
     datasets: [
       {
-        data: [35, 25, 20, 15, 5],
-        backgroundColor: [
-          '#3b82f6', // blue
-          '#10b981', // green
-          '#f59e0b', // yellow
-          '#8b5cf6', // purple
-          '#64748b', // gray
-        ],
+        data: catValues.length ? catValues : [1],
+        backgroundColor: catLabels.length ? catColors : ['#e5e7eb'],
         borderWidth: 2,
         borderColor: '#fff',
       },
@@ -135,21 +183,53 @@ const Dashboard = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
   const handleEditExpense = (expense) => {
-  // Handle edit logic here
-  setFormData(expense);
+  console.log('Editing expense:', expense);
+  setFormData({
+    ...expense,
+   
+    date: expense.date ? new Date(expense.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+  });
   setShowAddExpense(true);
 };
 
 const handleDeleteExpense = (id) => {
-  // Handle delete logic here
-  setExpenses(expenses.filter(expense => expense.id !== id));
+  if (!id) {
+    toast.error('Error: No transaction ID provided');
+    return;
+  }
+  setDeleteTargetId(id);
+  setDeleteModalOpen(true);
 };
 
-  const handleAddExpense = (e) => {
-    e.preventDefault();
-    console.log('Adding expense:', formData);
-    setShowAddExpense(false);
-    resetFormData();
+const confirmDelete = async () => {
+  if (!deleteTargetId) return;
+  setIsDeleting(true);
+  try {
+    const result = await deleteTransaction(deleteTargetId).unwrap();
+    console.log('Delete result:', result);
+    toast.success('Transaction deleted successfully');
+    setDeleteModalOpen(false);
+    setDeleteTargetId(null);
+    await refetch();
+  } catch (error) {
+    console.error('Failed to delete transaction:', error);
+    const errorMessage = error?.data?.message || error?.error || 'Failed to delete transaction';
+    toast.error(errorMessage);
+  } finally {
+    setIsDeleting(false);
+  }
+};
+
+  const handleAddExpense = async (e, result) => {
+    try {
+      // The actual create/update is now handled in AddExpenseModal
+      // We just need to refresh the transactions list
+      await refetch();
+      resetFormData();
+    } catch (error) {
+      console.error('Error handling transaction:', error);
+      // Error is already shown in AddExpenseModal
+    }
   };
 
   const resetFormData = () => {
@@ -171,7 +251,7 @@ const handleDeleteExpense = (id) => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       {/* Header */}
-      <Header username="Dhanashree" onLogout={() => console.log('Logged out')} />
+      <Header username={username || 'User'} onLogout={() => console.log('Logged out')} />
       <TransactionHeader
         onAddTransaction={() => setShowAddExpense(true)}
         categories={categories}
@@ -240,17 +320,34 @@ const handleDeleteExpense = (id) => {
       {/* Add Expense Modal */}
       <AddExpenseModal
         isOpen={showAddExpense}
-        onClose={() => setShowAddExpense(false)}
+        onClose={() => {
+          setShowAddExpense(false);
+          // Reset form data when modal is closed
+          resetFormData();
+        }}
         onSubmit={handleAddExpense}
         formData={formData}
         onInputChange={handleInputChange}
+        isEditing={!!formData._id}
+      />
+
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        title="Delete Transaction"
+        message="Are you sure you want to delete this transaction? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={() => { if (!isDeleting) { setDeleteModalOpen(false); setDeleteTargetId(null); } }}
       />
 
       <ExpenseTable 
-       expenses={filteredExpenses}
-       onEdit={handleEditExpense}
-       onDelete={handleDeleteExpense}
-/>
+       expenses={filteredExpenses} 
+       onEdit={handleEditExpense} 
+       onDelete={handleDeleteExpense} 
+       isLoading={isLoading}
+      />
     </div>
   );
 };

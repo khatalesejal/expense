@@ -1,10 +1,13 @@
 'use client';
 
 import { FiX, FiDollarSign, FiShoppingBag, FiCreditCard, FiCoffee, FiFilm, FiGift, FiChevronDown } from 'react-icons/fi';
+import { useCreateTransactionMutation, useUpdateTransactionMutation } from '../services/authApi';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { useState, useEffect } from 'react';
 
-const AddExpenseModal = ({ isOpen, onClose, onSubmit, formData, onInputChange }) => {
+const AddExpenseModal = ({ isOpen, onClose, onSubmit, formData, onInputChange, isEditing = false }) => {
   const [errors, setErrors] = useState({});
   
   useEffect(() => {
@@ -55,12 +58,41 @@ const AddExpenseModal = ({ isOpen, onClose, onSubmit, formData, onInputChange })
     onInputChange(e);
   };
 
-  const handleSubmit = (e) => {
+  const [createTransaction, { isLoading: isCreating }] = useCreateTransactionMutation();
+  const [updateTransaction, { isLoading: isUpdating }] = useUpdateTransactionMutation();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      onSubmit(e);
+    if (!validateForm()) return;
+
+    try {
+      let result;
+      if (isEditing && formData._id) {
+        // Update existing transaction
+        const { _id, ...updateData } = formData;
+        result = await updateTransaction({ id: _id, ...updateData }).unwrap();
+        toast.success('Transaction updated successfully!');
+      } else {
+        // Create new transaction
+        result = await createTransaction(formData).unwrap();
+        toast.success('Transaction added successfully!');
+      }
+      
+      // Call the original onSubmit with the result
+      if (onSubmit) {
+        await onSubmit(e, result);
+      }
+      
+      // Close the modal after successful submission
+      onClose();
+    } catch (err) {
+      console.error('Failed to save transaction:', err);
+      const errorMessage = err?.data?.message || (isEditing ? 'Failed to update transaction' : 'Failed to add transaction');
+      toast.error(errorMessage);
     }
   };
+  
+  const isLoading = isCreating || isUpdating;
   
 
   if (!isOpen) return null;
@@ -68,11 +100,11 @@ const AddExpenseModal = ({ isOpen, onClose, onSubmit, formData, onInputChange })
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all duration-300">
       <div className="bg-white/95 dark:bg-gray-800/95 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-100 dark:border-gray-700 backdrop-blur-lg transition-all duration-300 transform hover:scale-[1.005] hover:shadow-xl">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold">Add New Transaction</h3>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-semibold">{isEditing ? 'Edit Transaction' : 'Add New Transaction'}</h3>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
+            className="text-gray-400 hover:text-gray-500 transition-colors"
             aria-label="Close modal"
           >
             <FiX size={24} />

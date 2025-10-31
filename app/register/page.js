@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function RegisterPage() {
-  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -21,14 +21,17 @@ export default function RegisterPage() {
   const validateForm = () => {
     const errors = {};
     
-    if (!username.trim()) {
-      errors.username = 'Username is required';
+    if (!name.trim()) {
+      errors.name = 'Name is required';
     }
     
     if (!email.trim()) {
       errors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       errors.email = 'Please enter a valid email address';
+    } else if (error && error.toLowerCase().includes('email') && error.toLowerCase().includes('already')) {
+      // Show the email already registered error if it exists
+      errors.email = 'This email is already registered. Please use a different email or log in.';
     }
     
     if (!password) {
@@ -44,7 +47,7 @@ export default function RegisterPage() {
   const handleInputChange = (field) => (e) => {
     const value = e.target.value;
     
-    if (field === 'username') setUsername(value);
+    if (field === 'name') setName(value);
     else if (field === 'email') setEmail(value);
     else if (field === 'password') setPassword(value);
    
@@ -69,7 +72,7 @@ export default function RegisterPage() {
     }
     
     try {
-      const result = await register({ username, email, password }).unwrap();
+      const result = await register({ name, email, password }).unwrap();
       
       toast.success('Account created successfully!', {
         duration: 3000,
@@ -86,12 +89,13 @@ export default function RegisterPage() {
       // Set the general error message
       setError(errorMessage);
      
-      if (errorMessage.toLowerCase().includes('email') && errorMessage.toLowerCase().includes('already')) {
-        setValidationErrors({
-          ...validationErrors,
-          email: errorMessage
-        });
-      }
+      // We'll handle the email validation in the validateForm function
+      setValidationErrors(prev => ({
+        ...prev,
+        email: errorMessage.toLowerCase().includes('email') && errorMessage.toLowerCase().includes('already') 
+          ? 'This email is already registered. Please use a different email or log in.'
+          : prev.email
+      }));
     }
   };
 
@@ -108,7 +112,7 @@ export default function RegisterPage() {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {/* {error && (
+          {error && (
             <div className="rounded-md bg-red-50 p-4 mb-4">
               <div className="flex">
                 <div className="flex-shrink-0">
@@ -119,29 +123,29 @@ export default function RegisterPage() {
                 </div>
               </div>
             </div>
-          )} */}
+          )}
           <div className="space-y-4">
             
-            {/* Username */}
+            {/* Name */}
             <div>
-              <label htmlFor="username" className="sr-only">
-                Username
+              <label htmlFor="name" className="sr-only">
+                Name
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <UserIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                 </div>
                 <input
-                  id="username"
-                  name="username"
+                  id="name"
+                  name="name"
                   type="text"
-                  value={username}
-                  onChange={handleInputChange('username')}
-                  className={`appearance-none block w-full pl-10 px-3 py-3 border ${validationErrors.username ? 'border-red-300' : 'border-gray-300'} rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm`}
-                  placeholder="Username"
+                  value={name}
+                  onChange={handleInputChange('name')}
+                  placeholder='Username'
+                  className={`appearance-none block w-full pl-10 px-3 py-3 border ${validationErrors.name ? 'border-red-300' : 'border-gray-300'} rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm`}
                 />
-                {validationErrors.username && (
-                  <p className="mt-1 text-sm text-red-600">{validationErrors.username}</p>
+                {validationErrors.name && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.name}</p>
                 )}
               </div>
             </div>
