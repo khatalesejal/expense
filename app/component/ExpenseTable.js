@@ -61,7 +61,7 @@ export default function ExpenseTable({ expenses = [], onEdit, onDelete }) {
                     <FiEdit2 className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => onDelete(expense.id)}
+                    onClick={() => onDelete(expense._id)}
                     className="text-red-600 hover:text-red-900"
                     title="Delete"
                   >

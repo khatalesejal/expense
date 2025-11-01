@@ -69,7 +69,7 @@ export default function RegisterPage() {
     }
     
     try {
-      const result = await register({ username, email, password }).unwrap();
+      const result = await register({ name: username, email, password }).unwrap();
       
       toast.success('Account created successfully!', {
         duration: 3000,

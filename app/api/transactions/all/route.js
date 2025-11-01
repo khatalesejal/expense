@@ -1,3 +1,4 @@
+//  app/api/transactions/all/ route.js
 import { NextResponse } from "next/server";
 import Transaction from "../../../models/Transaction";
 import getUserFromCookie from "../../../util/auth";

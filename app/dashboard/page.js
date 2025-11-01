@@ -1,9 +1,636 @@
+// // // 'use client';
+
+// // // import { useGetDashboardDataQuery } from "../services/api";
+// // // import { useState, useEffect } from 'react';
+// // // import { FiDollarSign, FiTrendingUp, FiTrendingDown } from 'react-icons/fi';
+// // // import TransactionHeader from '../component/TransactionHeader';
+// // // import { Bar, Pie } from 'react-chartjs-2';
+// // // import {
+// // //   Chart as ChartJS,
+// // //   CategoryScale,
+// // //   LinearScale,
+// // //   BarElement,
+// // //   ArcElement,
+// // //   Title,
+// // //   Tooltip,
+// // //   Legend,
+// // // } from 'chart.js';
+// // // import AddExpenseModal from '../component/AddExpenseModal';
+// // // import Header from '../component/Header';
+// // // import ExpenseTable from '../component/ExpenseTable';
+
+
+// // // // ✅ Register ChartJS components
+// // // ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
+
+// // // const Dashboard = () => {
+// // //   const [showAddExpense, setShowAddExpense] = useState(false);
+// // //   const [selectedCategory, setSelectedCategory] = useState('all');
+// // //   const [selectedMonth, setSelectedMonth] = useState(new Date());
+// // //   const [filteredExpenses, setFilteredExpenses] = useState([]);
+// // //   const [formData, setFormData] = useState({
+// // //     title: '',
+// // //     amount: '',
+// // //     date: new Date().toISOString().split('T')[0],
+// // //     category: '',
+// // //     type: '',
+// // //     note: ''
+// // //   });
+// // //   const [expenses, setExpenses] = useState([
+// // //   // Sample data - replace with your actual data
+// // //   { id: 1, title: 'Grocery', category: 'Food', type: 'Expense', amount: 150.00, date: '2023-10-29' },
+// // //   { id: 2, title: 'Salary', category: 'Income', type: 'Income', amount: 3000.00, date: '2023-10-28' },
+// // // ]);
+
+// // //   // Get unique categories for the filter
+// // //   const categories = [...new Set(expenses.map(expense => expense.category))];
+
+// // //   // Filter expenses based on selected category and month
+// // //   useEffect(() => {
+// // //     let result = [...expenses];
+    
+// // //     // Filter by category
+// // //     if (selectedCategory !== 'all') {
+// // //       result = result.filter(expense => expense.category === selectedCategory);
+// // //     }
+    
+// // //     // Filter by month and year
+// // //     result = result.filter(expense => {
+// // //       const expenseDate = new Date(expense.date);
+// // //       return (
+// // //         expenseDate.getMonth() === selectedMonth.getMonth() &&
+// // //         expenseDate.getFullYear() === selectedMonth.getFullYear()
+// // //       );
+// // //     });
+    
+// // //     setFilteredExpenses(result);
+// // //   }, [expenses, selectedCategory, selectedMonth]);
+
+// // //   // Calculate summary data based on filtered expenses
+// // //   const summaryData = {
+// // //     balance: 0,
+// // //     income: 0,
+// // //     expenses: 0,
+// // //   };
+
+// // //   filteredExpenses.forEach(expense => {
+// // //     if (expense.type === 'Income') {
+// // //       summaryData.income += parseFloat(expense.amount);
+// // //     } else {
+// // //       summaryData.expenses += parseFloat(expense.amount);
+// // //     }
+// // //   });
+  
+// // //   summaryData.balance = summaryData.income - summaryData.expenses;
+
+// // //   // Chart data
+// // //   const monthlyData = {
+// // //     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+// // //     datasets: [
+// // //       {
+// // //         label: 'Income',
+// // //         data: [3000, 2800, 3200, 3000, 3500, 3400, 3600, 3500, 3400, 3500],
+// // //         backgroundColor: 'rgba(34,197,94,0.7)',
+// // //         borderRadius: 4,
+// // //       },
+// // //       {
+// // //         label: 'Expenses',
+// // //         data: [2400, 2100, 2300, 2200, 2500, 2400, 2600, 2500, 2400, 2500],
+// // //         backgroundColor: 'rgba(239,68,68,0.7)',
+// // //         borderRadius: 4,
+// // //       },
+// // //     ],
+// // //   };
+
+// // //   const categoryData = {
+// // //     labels: ['Food', 'Shopping', 'Bills', 'Entertainment', 'Others'],
+// // //     datasets: [
+// // //       {
+// // //         data: [35, 25, 20, 15, 5],
+// // //         backgroundColor: [
+// // //           '#3b82f6', // blue
+// // //           '#10b981', // green
+// // //           '#f59e0b', // yellow
+// // //           '#8b5cf6', // purple
+// // //           '#64748b', // gray
+// // //         ],
+// // //         borderWidth: 2,
+// // //         borderColor: '#fff',
+// // //       },
+// // //     ],
+// // //   };
+
+// // //   const chartOptions = {
+// // //     responsive: true,
+// // //     plugins: {
+// // //       legend: { position: 'top' },
+// // //     },
+// // //     maintainAspectRatio: false,
+// // //     scales: {
+// // //       y: { beginAtZero: true },
+// // //     },
+// // //   };
+
+// // //   const handleInputChange = (e) => {
+// // //     const { name, value } = e.target;
+// // //     setFormData((prev) => ({ ...prev, [name]: value }));
+// // //   };
+// // //   const handleEditExpense = (expense) => {
+// // //   // Handle edit logic here
+// // //   setFormData(expense);
+// // //   setShowAddExpense(true);
+// // // };
+
+// // // const handleDeleteExpense = (id) => {
+// // //   // Handle delete logic here
+// // //   setExpenses(expenses.filter(expense => expense.id !== id));
+// // // };
+
+// // //   const handleAddExpense = (e) => {
+// // //     e.preventDefault();
+// // //     console.log('Adding expense:', formData);
+// // //     setShowAddExpense(false);
+// // //     resetFormData();
+// // //   };
+
+// // //   const resetFormData = () => {
+// // //     setFormData({
+// // //       title: '',
+// // //       amount: '',
+// // //       date: new Date().toISOString().split('T')[0],
+// // //       category: '',
+// // //       type: '',
+// // //       note: ''
+// // //     });
+// // //   };
+
+// // //   const handleAddTransactionClick = () => {
+// // //     resetFormData();
+// // //     setShowAddExpense(true);
+// // //   };
+
+// // //   return (
+// // //     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+// // //       {/* Header */}
+// // //       <Header username="Dhanashree" onLogout={() => console.log('Logged out')} />
+// // //       <TransactionHeader
+// // //         onAddTransaction={() => setShowAddExpense(true)}
+// // //         categories={categories}
+// // //         onCategoryChange={(category) => setSelectedCategory(category)}
+// // //         onMonthChange={(date) => setSelectedMonth(date)}
+// // //       />
+
+// // //       {/* Summary Cards */}
+// // //       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+// // //         {/* Total Balance */}
+// // //         <div className="bg-white p-6 rounded-xl shadow-sm flex items-center">
+// // //           <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+// // //             <FiDollarSign size={24} />
+// // //           </div>
+// // //           <div>
+// // //             <p className="text-gray-500 text-sm">Total Balance</p>
+// // //             <p className="text-2xl font-semibold">₹{summaryData.balance.toFixed(2)}</p>
+// // //           </div>
+// // //         </div>
+
+// // //         {/* Income */}
+// // //         <div className="bg-white p-6 rounded-xl shadow-sm flex items-center">
+// // //           <div className="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+// // //             <FiTrendingUp size={24} />
+// // //           </div>
+// // //           <div>
+// // //             <p className="text-gray-500 text-sm">Income</p>
+// // //             <p className="text-2xl font-semibold">+₹{summaryData.income.toFixed(2)}</p>
+// // //           </div>
+// // //         </div>
+
+// // //         {/* Expenses */}
+// // //         <div className="bg-white p-6 rounded-xl shadow-sm flex items-center">
+// // //           <div className="p-3 rounded-full bg-red-100 text-red-600 mr-4">
+// // //             <FiTrendingDown size={24} />
+// // //           </div>
+// // //           <div>
+// // //             <p className="text-gray-500 text-sm">Expenses</p>
+// // //             <p className="text-2xl font-semibold">-₹{summaryData.expenses.toFixed(2)}</p>
+// // //           </div>
+// // //         </div>
+// // //       </div>
+
+// // //       {/* Charts */}
+// // //       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+// // //         {/* Bar Chart */}
+// // //         <div className="bg-white p-6 rounded-xl shadow-sm">
+// // //           <h3 className="text-lg font-semibold mb-4">Monthly Overview</h3>
+// // //           <div className="h-[300px]">
+// // //             <Bar data={monthlyData} options={chartOptions} />
+// // //           </div>
+// // //         </div>
+
+// // //         {/* Pie Chart */}
+// // //         <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
+// // //           <h3 className="text-lg font-semibold mb-4">Spending by Category</h3>
+// // //           {/* this fixes the "too large" issue */}
+// // //           <div className="w-full flex justify-center">
+// // //             <div className="aspect-square w-64 max-w-full">
+// // //               <Pie data={categoryData} options={{ plugins: { legend: { position: 'bottom' } }, maintainAspectRatio: true }} />
+// // //             </div>
+// // //           </div>
+// // //         </div>
+// // //       </div>
+
+// // //       {/* Add Expense Modal */}
+// // //       <AddExpenseModal
+// // //         isOpen={showAddExpense}
+// // //         onClose={() => setShowAddExpense(false)}
+// // //         onSubmit={handleAddExpense}
+// // //         formData={formData}
+// // //         onInputChange={handleInputChange}
+// // //       />
+
+// // //       <ExpenseTable 
+// // //        expenses={filteredExpenses}
+// // //        onEdit={handleEditExpense}
+// // //        onDelete={handleDeleteExpense}
+// // // />
+// // //     </div>
+// // //   );
+// // // };
+
+// // // export default Dashboard;
+
+
+// // 'use client';
+
+// // import {
+// //   useGetDashboardDataQuery,
+// //   useGetAllTransactionsQuery,
+// //   useCreateTransactionMutation,
+// //   useUpdateTransactionMutation, 
+// //   useDeleteTransactionMutation 
+// // } from "../services/api";
+
+// // import { useState, useEffect } from 'react';
+// // import { FiDollarSign, FiTrendingUp, FiTrendingDown } from 'react-icons/fi';
+// // import TransactionHeader from '../component/TransactionHeader';
+// // import { Bar, Pie } from 'react-chartjs-2';
+
+// // import {
+// //   Chart as ChartJS,
+// //   CategoryScale,
+// //   LinearScale,
+// //   BarElement,
+// //   ArcElement,
+// //   Title,
+// //   Tooltip,
+// //   Legend,
+// // } from 'chart.js';
+
+// // import AddExpenseModal from '../component/AddExpenseModal';
+// // import Header from '../component/Header';
+// // import ExpenseTable from '../component/ExpenseTable';
+
+// // ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
+
+// // const Dashboard = () => {
+// //   const [showAddExpense, setShowAddExpense] = useState(false);
+// //   const [formData, setFormData] = useState({
+// //     title: "",
+// //     amount: "",
+// //     date: new Date().toISOString().split("T")[0],
+// //     category: "",
+// //     type: "",
+// //     note: ""
+// //   });
+
+// //   // ✅ Fetch data using RTK Query
+// //   const { data: dashboardData, isLoading: dashboardLoading } = useGetDashboardDataQuery();
+// //   const { data: transactions, isLoading: transactionLoading } = useGetAllTransactionsQuery();
+// //   const [createTransaction] = useCreateTransactionMutation();
+// //   const [updateTransaction] = useUpdateTransactionMutation();
+// //   const [deleteTransaction] = useDeleteTransactionMutation();
+
+// //   // ✅ Derived Values
+// //   const balance = dashboardData?.totals?.income - dashboardData?.totals?.expense || 0;
+
+// //   // Pie Chart Data
+// //   const categoryData = {
+// //     labels: dashboardData?.categories?.map(c => c._id) || [],
+// //     datasets: [
+// //       {
+// //         data: dashboardData?.categories?.map(c => c.total) || [],
+// //         backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'],
+// //         borderWidth: 2,
+// //         borderColor: '#fff',
+// //       },
+// //     ],
+// //   };
+
+// //   // Bar Chart Data
+// //   const monthlyLabels = dashboardData?.monthly?.map(item => item._id) || [];
+// //   const monthlyTotals = dashboardData?.monthly?.map(item => item.total) || [];
+
+// //   const monthlyData = {
+// //     labels: monthlyLabels,
+// //     datasets: [
+// //       {
+// //         label: 'Total',
+// //         data: monthlyTotals,
+// //         backgroundColor: 'rgba(34,197,94,0.7)',
+// //         borderRadius: 4,
+// //       },
+// //     ],
+// //   };
+
+// //   // Handle Input
+// //   const handleInputChange = (e) => {
+// //     const { name, value } = e.target;
+// //     setFormData(prev => ({ ...prev, [name]: value }));
+// //   };
+
+// //   //  Create Transaction Submit
+// //   const handleAddExpense = async (e) => {
+// //     e.preventDefault();
+// //     await createTransaction(formData);
+// //     setShowAddExpense(false);
+// //   };
+
+// //   if (dashboardLoading || transactionLoading) return <p className="p-10 text-center">Loading...</p>;
+
+// //   return (
+// //     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+
+// //       <Header username="User" />
+// //       <TransactionHeader onAddTransaction={() => setShowAddExpense(true)} />
+
+// //       {/* Summary Cards */}
+// //       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+// //         <Card icon={<FiDollarSign />} label="Total Balance" value={`₹${balance}`} />
+// //         <Card icon={<FiTrendingUp />} label="Income" value={`+₹${dashboardData?.totals?.income || 0}`} />
+// //         <Card icon={<FiTrendingDown />} label="Expenses" value={`-₹${dashboardData?.totals?.expense || 0}`} />
+// //       </div>
+
+// //       {/* Charts */}
+// //       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+// //         <div className="bg-white p-6 rounded-xl shadow-sm">
+// //           <h3 className="text-lg font-semibold mb-4">Monthly Overview</h3>
+// //           <div className="h-[300px]">
+// //             <Bar data={monthlyData} />
+// //           </div>
+// //         </div>
+
+// //         <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
+// //           <h3 className="text-lg font-semibold mb-4">Spending by Category</h3>
+// //           <div className="w-64">
+// //             <Pie data={categoryData} />
+// //           </div>
+// //         </div>
+
+// //       </div>
+
+// //       {/* Add Expense Modal */}
+// //       <AddExpenseModal
+// //         isOpen={showAddExpense}
+// //         onClose={() => setShowAddExpense(false)}
+// //         onSubmit={handleAddExpense}
+// //         formData={formData}
+// //         onInputChange={handleInputChange}
+// //       />
+
+// //       {/* Transaction Table */}
+// //       <ExpenseTable expenses={transactions || []} />
+// //     </div>
+// //   );
+// // };
+
+// // const Card = ({ icon, label, value }) => (
+// //   <div className="bg-white p-6 rounded-xl shadow-sm flex items-center">
+// //     <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+// //       {icon}
+// //     </div>
+// //     <div>
+// //       <p className="text-gray-500 text-sm">{label}</p>
+// //       <p className="text-2xl font-semibold">{value}</p>
+// //     </div>
+// //   </div>
+// // );
+
+// // export default Dashboard;
+
+// 'use client';
+
+// import {
+//   useGetDashboardDataQuery,
+//   useGetAllTransactionsQuery,
+//   useCreateTransactionMutation,
+//   useUpdateTransactionMutation,
+//   useDeleteTransactionMutation,
+//   useGetCategoriesQuery,
+//   useCreateCategoryMutation
+// } from "../services/api";
+
+// import { useState } from 'react';
+// import { FiDollarSign, FiTrendingUp, FiTrendingDown } from 'react-icons/fi';
+// import TransactionHeader from '../component/TransactionHeader';
+// import { Bar, Pie } from 'react-chartjs-2';
+
+// import {
+//   Chart as ChartJS,
+//   CategoryScale,
+//   LinearScale,
+//   BarElement,
+//   ArcElement,
+//   Title,
+//   Tooltip,
+//   Legend,
+// } from 'chart.js';
+
+// import AddExpenseModal from '../component/AddExpenseModal';
+// import Header from '../component/Header';
+// import ExpenseTable from '../component/ExpenseTable';
+
+// ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
+
+// const Dashboard = () => {
+//   const [showAddExpense, setShowAddExpense] = useState(false);
+//   const [formData, setFormData] = useState({
+//     _id: "",
+//     title: "",
+//     amount: "",
+//     date: new Date().toISOString().split("T")[0],
+//     category: "",
+//     type: "",
+//     note: ""
+//   });
+
+//   // ✅ RTK Query Hooks
+//   const { data: dashboardData, isLoading: dashboardLoading } = useGetDashboardDataQuery();
+//   const { data: transactions, isLoading: transactionLoading } = useGetAllTransactionsQuery();
+//   const [createTransaction] = useCreateTransactionMutation();
+//   const [updateTransaction] = useUpdateTransactionMutation();
+//   const [deleteTransaction] = useDeleteTransactionMutation();
+
+//   // ✅ Summary Values
+//   const balance = dashboardData?.totals?.income - dashboardData?.totals?.expense || 0;
+
+//   // ✅ Pie Chart
+//   const categoryData = {
+//     labels: dashboardData?.categories?.map(c => c._id) || [],
+//     datasets: [
+//       {
+//         data: dashboardData?.categories?.map(c => c.total) || [],
+//         backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'],
+//         borderColor: '#fff',
+//       },
+//     ],
+//   };
+
+//   // ✅ Bar Chart
+//   const monthlyLabels = dashboardData?.monthly?.map(item => item._id) || [];
+//   const monthlyTotals = dashboardData?.monthly?.map(item => item.total) || [];
+
+//   const monthlyData = {
+//     labels: monthlyLabels,
+//     datasets: [
+//       {
+//         label: 'Total',
+//         data: monthlyTotals,
+//         backgroundColor: 'rgba(34,197,94,0.7)',
+//         borderRadius: 4,
+//       },
+//     ],
+//   };
+
+//   // ✅ Input Handler
+//   const handleInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({ ...prev, [name]: value }));
+//   };
+
+//   // ✅ Edit Expense
+//   const handleEditExpense = (expense) => {
+//     setFormData(expense); // expense contains `_id`
+//     setShowAddExpense(true);
+//   };
+
+//   // ✅ Add or Update Expense
+//   const handleAddExpense = async (e) => {
+//     e.preventDefault();
+
+//     if (formData._id) {
+//       await updateTransaction({ id: formData._id, data: formData });
+//     } else {
+//       await createTransaction(formData);
+//     }
+
+//     resetForm();
+//     setShowAddExpense(false);
+//   };
+
+//   // ✅ Delete Expense
+//   const handleDeleteExpense = async (id) => {
+//     await deleteTransaction(id);
+//   };
+
+//   // ✅ Reset Form
+//   const resetForm = () => {
+//     setFormData({
+//       _id: "",
+//       title: "",
+//       amount: "",
+//       date: new Date().toISOString().split("T")[0],
+//       category: "",
+//       type: "",
+//       note: ""
+//     });
+//   };
+
+//   if (dashboardLoading || transactionLoading) return <p className="p-10 text-center">Loading...</p>;
+
+//   return (
+//     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+
+//       <Header username="User" />
+//       <TransactionHeader onAddTransaction={() => setShowAddExpense(true)} />
+
+//       {/* Summary Cards */}
+//       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+//         <Card icon={<FiDollarSign />} label="Total Balance" value={`₹${balance}`} />
+//         <Card icon={<FiTrendingUp />} label="Income" value={`+₹${dashboardData?.totals?.income || 0}`} />
+//         <Card icon={<FiTrendingDown />} label="Expenses" value={`-₹${dashboardData?.totals?.expense || 0}`} />
+//       </div>
+
+//       {/* Charts */}
+//       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+//         <div className="bg-white p-6 rounded-xl shadow-sm">
+//           <h3 className="text-lg font-semibold mb-4">Monthly Overview</h3>
+//           <div className="h-[300px]">
+//             <Bar data={monthlyData} />
+//           </div>
+//         </div>
+
+//         <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
+//           <h3 className="text-lg font-semibold mb-4">Spending by Category</h3>
+//           <div className="w-64">
+//             <Pie data={categoryData} />
+//           </div>
+//         </div>
+
+//       </div>
+
+//       {/* Add/Edit Modal */}
+//       <AddExpenseModal
+//         isOpen={showAddExpense}
+//         onClose={() => setShowAddExpense(false)}
+//         onSubmit={handleAddExpense}
+//         formData={formData}
+//         onInputChange={handleInputChange}
+//       />
+
+//       {/* ✅ Pass Edit/Delete Handlers to Table */}
+//       <ExpenseTable 
+//         expenses={transactions || []}
+//         onEdit={handleEditExpense}
+//         onDelete={handleDeleteExpense}
+//       />
+
+//     </div>
+//   );
+// };
+
+// const Card = ({ icon, label, value }) => (
+//   <div className="bg-white p-6 rounded-xl shadow-sm flex items-center">
+//     <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+//       {icon}
+//     </div>
+//     <div>
+//       <p className="text-gray-500 text-sm">{label}</p>
+//       <p className="text-2xl font-semibold">{value}</p>
+//     </div>
+//   </div>
+// );
+
+// export default Dashboard;
+
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import {
+  useGetDashboardDataQuery,
+  useGetAllTransactionsQuery,
+  useCreateTransactionMutation,
+  useUpdateTransactionMutation,
+  useDeleteTransactionMutation,
+  useGetCategoriesQuery,
+  useCreateCategoryMutation
+} from "../services/api";
+
+import { useState } from 'react';
 import { FiDollarSign, FiTrendingUp, FiTrendingDown } from 'react-icons/fi';
 import TransactionHeader from '../component/TransactionHeader';
 import { Bar, Pie } from 'react-chartjs-2';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,245 +641,182 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+
 import AddExpenseModal from '../component/AddExpenseModal';
 import Header from '../component/Header';
 import ExpenseTable from '../component/ExpenseTable';
 
-
-// ✅ Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
   const [showAddExpense, setShowAddExpense] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [filteredExpenses, setFilteredExpenses] = useState([]);
   const [formData, setFormData] = useState({
-    title: '',
-    amount: '',
-    date: new Date().toISOString().split('T')[0],
-    category: '',
-    type: '',
-    note: ''
+    _id: "",
+    title: "",
+    amount: "",
+    date: new Date().toISOString().split("T")[0],
+    category: "",
+    type: "",
+    note: ""
   });
-  const [expenses, setExpenses] = useState([
-  // Sample data - replace with your actual data
-  { id: 1, title: 'Grocery', category: 'Food', type: 'Expense', amount: 150.00, date: '2023-10-29' },
-  { id: 2, title: 'Salary', category: 'Income', type: 'Income', amount: 3000.00, date: '2023-10-28' },
-]);
 
-  // Get unique categories for the filter
-  const categories = [...new Set(expenses.map(expense => expense.category))];
+  // ✅ RTK Query Hooks
+  const { data: dashboardData, isLoading: dashboardLoading } = useGetDashboardDataQuery();
+  const { data: transactions, isLoading: transactionLoading } = useGetAllTransactionsQuery();
+  const { data: categoryList } = useGetCategoriesQuery();           // ✅ Fetch Categories
+  const [createCategory] = useCreateCategoryMutation();             // ✅ Create Category
 
-  // Filter expenses based on selected category and month
-  useEffect(() => {
-    let result = [...expenses];
-    
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      result = result.filter(expense => expense.category === selectedCategory);
-    }
-    
-    // Filter by month and year
-    result = result.filter(expense => {
-      const expenseDate = new Date(expense.date);
-      return (
-        expenseDate.getMonth() === selectedMonth.getMonth() &&
-        expenseDate.getFullYear() === selectedMonth.getFullYear()
-      );
-    });
-    
-    setFilteredExpenses(result);
-  }, [expenses, selectedCategory, selectedMonth]);
+  const [createTransaction] = useCreateTransactionMutation();
+  const [updateTransaction] = useUpdateTransactionMutation();
+  const [deleteTransaction] = useDeleteTransactionMutation();
 
-  // Calculate summary data based on filtered expenses
-  const summaryData = {
-    balance: 0,
-    income: 0,
-    expenses: 0,
-  };
+  // ✅ Summary Values
+  const balance = dashboardData?.totals?.income - dashboardData?.totals?.expense || 0;
 
-  filteredExpenses.forEach(expense => {
-    if (expense.type === 'Income') {
-      summaryData.income += parseFloat(expense.amount);
-    } else {
-      summaryData.expenses += parseFloat(expense.amount);
-    }
-  });
-  
-  summaryData.balance = summaryData.income - summaryData.expenses;
-
-  // Chart data
-  const monthlyData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
-    datasets: [
-      {
-        label: 'Income',
-        data: [3000, 2800, 3200, 3000, 3500, 3400, 3600, 3500, 3400, 3500],
-        backgroundColor: 'rgba(34,197,94,0.7)',
-        borderRadius: 4,
-      },
-      {
-        label: 'Expenses',
-        data: [2400, 2100, 2300, 2200, 2500, 2400, 2600, 2500, 2400, 2500],
-        backgroundColor: 'rgba(239,68,68,0.7)',
-        borderRadius: 4,
-      },
-    ],
-  };
-
+  // ✅ Pie Chart Data
   const categoryData = {
-    labels: ['Food', 'Shopping', 'Bills', 'Entertainment', 'Others'],
+    labels: dashboardData?.categories?.map(c => c._id) || [],
     datasets: [
       {
-        data: [35, 25, 20, 15, 5],
-        backgroundColor: [
-          '#3b82f6', // blue
-          '#10b981', // green
-          '#f59e0b', // yellow
-          '#8b5cf6', // purple
-          '#64748b', // gray
-        ],
-        borderWidth: 2,
+        data: dashboardData?.categories?.map(c => c.total) || [],
+        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'],
         borderColor: '#fff',
       },
     ],
   };
 
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: { position: 'top' },
-    },
-    maintainAspectRatio: false,
-    scales: {
-      y: { beginAtZero: true },
-    },
+  // ✅ Bar Chart Data
+  const monthlyData = {
+    labels: dashboardData?.monthly?.map(item => item._id) || [],
+    datasets: [
+      {
+        label: 'Total',
+        data: dashboardData?.monthly?.map(item => item.total) || [],
+        backgroundColor: 'rgba(34,197,94,0.7)',
+        borderRadius: 4,
+      },
+    ],
   };
 
+  // ✅ Input Handler
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
+
+  // ✅ Edit Expense
   const handleEditExpense = (expense) => {
-  // Handle edit logic here
-  setFormData(expense);
-  setShowAddExpense(true);
-};
-
-const handleDeleteExpense = (id) => {
-  // Handle delete logic here
-  setExpenses(expenses.filter(expense => expense.id !== id));
-};
-
-  const handleAddExpense = (e) => {
-    e.preventDefault();
-    console.log('Adding expense:', formData);
-    setShowAddExpense(false);
-    resetFormData();
-  };
-
-  const resetFormData = () => {
-    setFormData({
-      title: '',
-      amount: '',
-      date: new Date().toISOString().split('T')[0],
-      category: '',
-      type: '',
-      note: ''
-    });
-  };
-
-  const handleAddTransactionClick = () => {
-    resetFormData();
+    setFormData(expense);
     setShowAddExpense(true);
   };
 
+  // ✅ Add / Update Expense
+  const handleAddExpense = async (e) => {
+    e.preventDefault();
+    if (formData._id) {
+      await updateTransaction({ id: formData._id, data: formData });
+    } else {
+      await createTransaction(formData);
+    }
+    resetForm();
+    setShowAddExpense(false);
+  };
+
+  // ✅ Delete Expense
+  const handleDeleteExpense = async (id) => {
+    await deleteTransaction(id);
+  };
+
+  // ✅ Add Category
+  const handleAddCategory = async () => {
+    const name = prompt("Enter new category name:");
+    if (!name || !name.trim()) return;
+    await createCategory({ name });
+  };
+
+  // ✅ Reset Form
+  const resetForm = () => {
+    setFormData({
+      _id: "",
+      title: "",
+      amount: "",
+      date: new Date().toISOString().split("T")[0],
+      category: "",
+      type: "",
+      note: ""
+    });
+  };
+
+  if (dashboardLoading || transactionLoading) return <p className="p-10 text-center">Loading...</p>;
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      {/* Header */}
-      <Header username="Dhanashree" onLogout={() => console.log('Logged out')} />
-      <TransactionHeader
-        onAddTransaction={() => setShowAddExpense(true)}
-        categories={categories}
-        onCategoryChange={(category) => setSelectedCategory(category)}
-        onMonthChange={(date) => setSelectedMonth(date)}
+
+      <Header username="User" />
+
+      <TransactionHeader 
+        onAddTransaction={() => setShowAddExpense(true)} 
+        onAddCategory={handleAddCategory} // ✅ Allows adding new category
       />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {/* Total Balance */}
-        <div className="bg-white p-6 rounded-xl shadow-sm flex items-center">
-          <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
-            <FiDollarSign size={24} />
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm">Total Balance</p>
-            <p className="text-2xl font-semibold">₹{summaryData.balance.toFixed(2)}</p>
-          </div>
-        </div>
-
-        {/* Income */}
-        <div className="bg-white p-6 rounded-xl shadow-sm flex items-center">
-          <div className="p-3 rounded-full bg-green-100 text-green-600 mr-4">
-            <FiTrendingUp size={24} />
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm">Income</p>
-            <p className="text-2xl font-semibold">+₹{summaryData.income.toFixed(2)}</p>
-          </div>
-        </div>
-
-        {/* Expenses */}
-        <div className="bg-white p-6 rounded-xl shadow-sm flex items-center">
-          <div className="p-3 rounded-full bg-red-100 text-red-600 mr-4">
-            <FiTrendingDown size={24} />
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm">Expenses</p>
-            <p className="text-2xl font-semibold">-₹{summaryData.expenses.toFixed(2)}</p>
-          </div>
-        </div>
+        <Card icon={<FiDollarSign />} label="Total Balance" value={`₹${balance}`} />
+        <Card icon={<FiTrendingUp />} label="Income" value={`+₹${dashboardData?.totals?.income || 0}`} />
+        <Card icon={<FiTrendingDown />} label="Expenses" value={`-₹${dashboardData?.totals?.expense || 0}`} />
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Bar Chart */}
+
         <div className="bg-white p-6 rounded-xl shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Monthly Overview</h3>
           <div className="h-[300px]">
-            <Bar data={monthlyData} options={chartOptions} />
+            <Bar data={monthlyData} />
           </div>
         </div>
 
-        {/* Pie Chart */}
         <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
           <h3 className="text-lg font-semibold mb-4">Spending by Category</h3>
-          {/* this fixes the "too large" issue */}
-          <div className="w-full flex justify-center">
-            <div className="aspect-square w-64 max-w-full">
-              <Pie data={categoryData} options={{ plugins: { legend: { position: 'bottom' } }, maintainAspectRatio: true }} />
-            </div>
+          <div className="w-64">
+            <Pie data={categoryData} />
           </div>
         </div>
+
       </div>
 
-      {/* Add Expense Modal */}
+      {/* Add/Edit Expense Modal */}
       <AddExpenseModal
         isOpen={showAddExpense}
         onClose={() => setShowAddExpense(false)}
         onSubmit={handleAddExpense}
         formData={formData}
         onInputChange={handleInputChange}
+        categories={categoryList?.categories || []}   // ✅ Pass categories to dropdown
+        onAddCategory={async (name) => await createCategory({ name })}   // ✅ Add new category from modal
       />
 
+      {/* Expense Table */}
       <ExpenseTable 
-       expenses={filteredExpenses}
-       onEdit={handleEditExpense}
-       onDelete={handleDeleteExpense}
-/>
+        expenses={transactions || []}
+        onEdit={handleEditExpense}
+        onDelete={handleDeleteExpense}
+      />
+
     </div>
   );
 };
+
+const Card = ({ icon, label, value }) => (
+  <div className="bg-white p-6 rounded-xl shadow-sm flex items-center">
+    <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+      {icon}
+    </div>
+    <div>
+      <p className="text-gray-500 text-sm">{label}</p>
+      <p className="text-2xl font-semibold">{value}</p>
+    </div>
+  </div>
+);
 
 export default Dashboard;
