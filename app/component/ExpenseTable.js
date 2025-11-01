@@ -1,15 +1,10 @@
-// app/component/ExpenseTable.js
+
 'use client';
 
 import { FiEdit2, FiTrash2, FiTrendingUp, FiTrendingDown } from 'react-icons/fi';
 
 export default function ExpenseTable({ expenses = [], onEdit, onDelete, isLoading = false }) {
-  // Sample data structure for reference
-  // const expenses = [
-  //   { id: 1, title: 'Grocery', category: 'Food', type: 'Expense', amount: 150.00, date: '2023-10-29' },
-  //   { id: 2, title: 'Salary', category: 'Income', type: 'Income', amount: 3000.00, date: '2023-10-28' },
-  //   // ... more expenses
-  // ];
+ 
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm">

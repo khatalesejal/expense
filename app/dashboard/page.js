@@ -38,6 +38,7 @@ const Dashboard = () => {
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [selectedType, setSelectedType] = useState('all');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -63,19 +64,29 @@ const Dashboard = () => {
     }
   }, []);
   
-  // Filter transactions based on selected category and month
+  // Filter transactions based on selected category, type and month
   const filteredExpenses = transactions.filter(expense => {
     const matchesCategory = selectedCategory === 'all' || expense.category === selectedCategory;
+    const matchesType = selectedType === 'all' || String(expense.type || '').toLowerCase() === selectedType;
     const expenseDate = new Date(expense.date);
     const matchesMonth = expenseDate.getMonth() === selectedMonth.getMonth() && 
                         expenseDate.getFullYear() === selectedMonth.getFullYear();
-    return matchesCategory && matchesMonth;
+    return matchesCategory && matchesType && matchesMonth;
   });
   
-  // Placeholder functions for edit and delete actions
+  // Sort by newest first (by date, then by createdAt if available)
+  const sortedExpenses = [...filteredExpenses].sort((a, b) => {
+    const ad = new Date(a.date);
+    const bd = new Date(b.date);
+    if (bd - ad !== 0) return bd - ad;
+    const ac = a.createdAt ? new Date(a.createdAt) : 0;
+    const bc = b.createdAt ? new Date(b.createdAt) : 0;
+    return bc - ac;
+  });
+ 
   const handleEdit = (id) => {
     console.log('Edit transaction:', id);
-    // Add edit functionality here
+   
   };
 
   const handleDelete = (id) => {
@@ -123,35 +134,43 @@ const Dashboard = () => {
     else if (tt === 'expense') monthExpense[idx] += amt;
   });
 
+  const monthlyDatasets = [];
+  if (selectedType === 'all' || selectedType === 'income') {
+    monthlyDatasets.push({
+      label: 'Income',
+      data: monthIncome,
+      backgroundColor: 'rgba(34,197,94,0.7)',
+      borderRadius: 4,
+    });
+  }
+  if (selectedType === 'all' || selectedType === 'expense') {
+    monthlyDatasets.push({
+      label: 'Expenses',
+      data: monthExpense,
+      backgroundColor: 'rgba(239,68,68,0.7)',
+      borderRadius: 4,
+    });
+  }
+
   const monthlyData = {
     labels: monthLabels,
-    datasets: [
-      {
-        label: 'Income',
-        data: monthIncome,
-        backgroundColor: 'rgba(34,197,94,0.7)',
-        borderRadius: 4,
-      },
-      {
-        label: 'Expenses',
-        data: monthExpense,
-        backgroundColor: 'rgba(239,68,68,0.7)',
-        borderRadius: 4,
-      },
-    ],
+    datasets: monthlyDatasets,
   };
 
-  // Spending by Category for the selected month (expenses only)
-  const expenseByCategoryMap = filteredExpenses.reduce((acc, t) => {
+  // Category distribution reflecting selectedType
+  const categoryByTypeMap = filteredExpenses.reduce((acc, t) => {
     const tt = String(t.type || '').toLowerCase();
-    if (tt !== 'expense') return acc;
+    // When 'all' is selected, default to showing expenses only for meaningful "Spending"
+    if (selectedType === 'all' && tt !== 'expense') return acc;
+    // When a specific type is selected, include only that type
+    if (selectedType !== 'all' && tt !== selectedType) return acc;
     const key = t.category || 'Others';
     const amt = Number(t.amount) || 0;
     acc[key] = (acc[key] || 0) + amt;
     return acc;
   }, {});
-  const catLabels = Object.keys(expenseByCategoryMap);
-  const catValues = catLabels.map((k) => expenseByCategoryMap[k]);
+  const catLabels = Object.keys(categoryByTypeMap);
+  const catValues = catLabels.map((k) => categoryByTypeMap[k]);
   const palette = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#14b8a6', '#eab308', '#22d3ee', '#64748b'];
   const catColors = catLabels.map((_, i) => palette[i % palette.length]);
 
@@ -166,6 +185,8 @@ const Dashboard = () => {
       },
     ],
   };
+
+  const pieTitle = selectedType === 'income' ? 'Income by Category' : 'Spending by Category';
 
   const chartOptions = {
     responsive: true,
@@ -254,9 +275,11 @@ const confirmDelete = async () => {
       <Header username={username || 'User'} onLogout={() => console.log('Logged out')} />
       <TransactionHeader
         onAddTransaction={() => setShowAddExpense(true)}
-        categories={categories}
+        expenses={transactions}
         onCategoryChange={(category) => setSelectedCategory(category)}
         onMonthChange={(date) => setSelectedMonth(date)}
+        selectedType={selectedType}
+        onTypeChange={(t) => setSelectedType(t)}
       />
 
       {/* Summary Cards */}
@@ -307,7 +330,7 @@ const confirmDelete = async () => {
 
         {/* Pie Chart */}
         <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
-          <h3 className="text-lg font-semibold mb-4">Spending by Category</h3>
+          <h3 className="text-lg font-semibold mb-4">{pieTitle}</h3>
           {/* this fixes the "too large" issue */}
           <div className="w-full flex justify-center">
             <div className="aspect-square w-64 max-w-full">
@@ -343,7 +366,7 @@ const confirmDelete = async () => {
       />
 
       <ExpenseTable 
-       expenses={filteredExpenses} 
+       expenses={sortedExpenses} 
        onEdit={handleEditExpense} 
        onDelete={handleDeleteExpense} 
        isLoading={isLoading}

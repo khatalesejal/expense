@@ -98,8 +98,8 @@ const AddExpenseModal = ({ isOpen, onClose, onSubmit, formData, onInputChange, i
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all duration-300">
-      <div className="bg-white/95 dark:bg-gray-800/95 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-100 dark:border-gray-700 backdrop-blur-lg transition-all duration-300 transform hover:scale-[1.005] hover:shadow-xl">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-100">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-semibold">{isEditing ? 'Edit Transaction' : 'Add New Transaction'}</h3>
           <button
@@ -179,36 +179,6 @@ const AddExpenseModal = ({ isOpen, onClose, onSubmit, formData, onInputChange, i
             )}
           </div>
 
-          {/* Category Field */}
-          {/* <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-              Category <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleInputChangeWithErrorClear}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-                
-              >
-                <option value="">Select a category</option>
-                <option value="food">Food & Drinks</option>
-                <option value="shopping">Shopping</option>
-                <option value="bills">Bills</option>
-                <option value="transportation">Transportation</option>
-                <option value="entertainment">Entertainment</option>
-                <option value="gifts">Gifts</option>
-                <option value="other">Other</option>
-              </select>
-              <div className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">
-                <FiChevronDown className="h-4 w-4" />
-              </div>
-            </div>
-          </div> */}
-
-          {/* Category Field */}
 {/* Category Field */}
             <div>
               <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
@@ -289,15 +259,21 @@ const AddExpenseModal = ({ isOpen, onClose, onSubmit, formData, onInputChange, i
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              disabled={isLoading}
+              className={`px-4 py-2 border border-gray-300 rounded-md text-gray-700 transition-colors ${
+                isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'
+              }`}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              disabled={isLoading}
+              className={`px-4 py-2 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors ${
+                isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
-              Submit
+              {isLoading ? 'Submitting...' : 'Submit'}
             </button>
           </div>
         </form>
