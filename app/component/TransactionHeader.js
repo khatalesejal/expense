@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { FiPlus, FiCalendar, FiFilter, FiX, FiChevronDown } from 'react-icons/fi';
+import { FiPlus, FiCalendar, FiFilter, FiX, FiChevronDown, FiTrendingUp, FiTrendingDown } from 'react-icons/fi';
 import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
 
@@ -16,7 +16,7 @@ const defaultCategories = [
   'Other'
 ];
 
-const TransactionHeader = ({ onAddTransaction, onCategoryChange, onMonthChange, expenses = [] }) => {
+const TransactionHeader = ({ onAddTransaction, onCategoryChange, onMonthChange, onTypeChange, selectedType = 'all', expenses = [] }) => {
   // Get unique categories from expenses and combine with default categories
   const expenseCategories = [...new Set(expenses.map(expense => expense.category))];
   const allCategories = [...new Set([...defaultCategories, ...expenseCategories])];
@@ -29,6 +29,7 @@ const TransactionHeader = ({ onAddTransaction, onCategoryChange, onMonthChange, 
   const datePickerRef = useRef(null);
   const categoryDropdownRef = useRef(null);
   const categoryInputRef = useRef(null);
+  const [activeType, setActiveType] = useState(selectedType);
 
   // Close date picker when clicking outside
   useEffect(() => {
@@ -100,6 +101,10 @@ const TransactionHeader = ({ onAddTransaction, onCategoryChange, onMonthChange, 
     onMonthChange?.(currentDate);
   }, []);
 
+  useEffect(() => {
+    setActiveType(selectedType);
+  }, [selectedType]);
+
   const handleDateChange = (date) => {
     // Normalize to the first day of the month for consistent monthly filtering
     const normalized = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -138,6 +143,42 @@ const TransactionHeader = ({ onAddTransaction, onCategoryChange, onMonthChange, 
         </div>
         
         <div className="flex items-center space-x-2">
+          {/* Type Segmented Tabs (desktop) */}
+          <div className="hidden md:flex items-center bg-gray-100 rounded-lg p-1">
+            {[
+              { key: 'all', label: 'All' },
+              { key: 'income', label: 'Income', icon: FiTrendingUp, color: 'text-green-600' },
+              { key: 'expense', label: 'Expense', icon: FiTrendingDown, color: 'text-red-600' },
+            ].map((opt) => {
+              const Icon = opt.icon;
+              const active = activeType === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => { setActiveType(opt.key); onTypeChange?.(opt.key); }}
+                  className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-md transition-colors ${
+                    active ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  {Icon ? <Icon className={`${opt.color} ${active ? '' : ''}`} /> : null}
+                  <span>{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          {/* Type Select (mobile) */}
+          <div className="md:hidden">
+            <select
+              value={activeType}
+              onChange={(e) => { setActiveType(e.target.value); onTypeChange?.(e.target.value); }}
+              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm"
+            >
+              <option value="all">All</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
           <div className="relative" ref={categoryDropdownRef}>
             <div 
               className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
